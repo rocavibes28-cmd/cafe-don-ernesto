@@ -251,6 +251,7 @@
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;}
   .reveal.in{opacity:1;transform:translateY(0);}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -489,8 +490,11 @@
         <div class="bolero-card" id="finalCard"></div>
         <div class="action-row">
           <button class="btn btn-solid" type="button" onclick="downloadBolero()">Descargar mi Bolero</button>
+          <button class="btn btn-outline" type="button" id="shareImgBtn" onclick="shareBoleroImage()">Compartir imagen</button>
+          <a class="btn btn-outline" id="shareWhatsappLink" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
           <button class="btn btn-outline" type="button" onclick="resetWizard()">Empezar otro</button>
         </div>
+        <p class="status-line" id="step3Status"></p>
       </div>
     </div>
   </section>
@@ -815,7 +819,40 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     window._finalBoleroHtml = card.innerHTML;
     window._finalBoleroTitle = parsed.title;
     window._finalBoleroMood = mood;
+    const waText = `${parsed.title}\n${parsed.dedic ? parsed.dedic + '\n' : ''}\n${parsed.body}\n\n— Café de Don Ernesto\nhttps://cafededonernesto-bnu.pages.dev`;
+    document.getElementById('shareWhatsappLink').href = 'https://wa.me/?text=' + encodeURIComponent(waText);
+    document.getElementById('step3Status').textContent = '';
     setStep(3);
+  }
+
+  async function shareBoleroImage(){
+    const statusEl = document.getElementById('step3Status');
+    const card = document.getElementById('finalCard');
+    statusEl.textContent = 'Preparando la imagen…';
+    try{
+      const canvas = await html2canvas(card, { backgroundColor:'#2c1810', scale:2, useCORS:true });
+      canvas.toBlob(async (blob)=>{
+        if(!blob){ statusEl.textContent = 'No se pudo generar la imagen. Intenta de nuevo.'; return; }
+        const fileName = (window._finalBoleroTitle || 'mi-bolero').toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.png';
+        const file = new File([blob], fileName, { type:'image/png' });
+        if(navigator.canShare && navigator.canShare({ files:[file] })){
+          try{
+            await navigator.share({ files:[file], title: window._finalBoleroTitle || 'Mi Bolero Escrito', text: 'Mi Bolero Escrito — Café de Don Ernesto' });
+            statusEl.textContent = '';
+            return;
+          }catch(shareErr){
+            if(shareErr && shareErr.name === 'AbortError'){ statusEl.textContent = ''; return; }
+          }
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName; a.click();
+        URL.revokeObjectURL(url);
+        statusEl.textContent = 'Imagen descargada — ya la puedes compartir donde quieras.';
+      }, 'image/png');
+    }catch(err){
+      statusEl.textContent = 'No se pudo generar la imagen. Intenta de nuevo.';
+    }
   }
 
   const MOOD_COLORS = {
