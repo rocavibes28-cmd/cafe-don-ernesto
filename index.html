@@ -173,22 +173,25 @@
   @media (max-width:560px){.field-row{grid-template-columns:1fr;}}
   .status-line{font-size:.8rem;color:var(--gold-light);min-height:1.2em;margin:6px 0 4px;}
   .bolero-card{position:relative;overflow:hidden;background:var(--paper);color:var(--ink);border-radius:6px;padding:48px 42px 42px;box-shadow:0 18px 44px rgba(0,0,0,.35);margin-bottom:20px;border:1px solid rgba(122,42,55,.22);}
+  .bolero-card.mood-romantico{--accent:#c79a3f;--accent2:#7a2a37;}
+  .bolero-card.mood-nostalgico{--accent:#8fa3c7;--accent2:#3a4a63;}
+  .bolero-card.mood-alegre{--accent:#e0923c;--accent2:#a94f1c;}
   .bolero-card::after{content:"";position:absolute;right:-16px;bottom:-16px;width:150px;height:150px;background:url('https://cafededonernesto-bnu.pages.dev/hero-don-ernesto.png') center/cover no-repeat;opacity:.07;border-radius:50%;filter:grayscale(1);pointer-events:none;}
   .bolero-corner{position:absolute;width:24px;height:24px;pointer-events:none;}
-  .bolero-corner.tl{top:12px;left:12px;border-top:2px solid var(--gold);border-left:2px solid var(--gold);}
-  .bolero-corner.tr{top:12px;right:12px;border-top:2px solid var(--gold);border-right:2px solid var(--gold);}
-  .bolero-corner.bl{bottom:12px;left:12px;border-bottom:2px solid var(--gold);border-left:2px solid var(--gold);}
-  .bolero-corner.br{bottom:12px;right:12px;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);}
+  .bolero-corner.tl{top:12px;left:12px;border-top:2px solid var(--accent,var(--gold));border-left:2px solid var(--accent,var(--gold));}
+  .bolero-corner.tr{top:12px;right:12px;border-top:2px solid var(--accent,var(--gold));border-right:2px solid var(--accent,var(--gold));}
+  .bolero-corner.bl{bottom:12px;left:12px;border-bottom:2px solid var(--accent,var(--gold));border-left:2px solid var(--accent,var(--gold));}
+  .bolero-corner.br{bottom:12px;right:12px;border-bottom:2px solid var(--accent,var(--gold));border-right:2px solid var(--accent,var(--gold));}
   .bolero-ornament{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;position:relative;z-index:1;}
-  .bolero-ornament::before,.bolero-ornament::after{content:"";flex:1;height:1px;max-width:64px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-  .bolero-ornament span{color:var(--gold);font-size:.85rem;}
-  .bolero-card h3{margin:0 0 6px;color:var(--wine);font-size:1.5rem;text-align:center;position:relative;z-index:1;}
+  .bolero-ornament::before,.bolero-ornament::after{content:"";flex:1;height:1px;max-width:64px;background:linear-gradient(90deg,transparent,var(--accent,var(--gold)),transparent);}
+  .bolero-ornament span{color:var(--accent,var(--gold));font-size:.85rem;}
+  .bolero-card h3{margin:0 0 6px;color:var(--accent2,var(--wine));font-size:1.5rem;text-align:center;position:relative;z-index:1;}
   .bolero-card .dedic{font-style:italic;color:#6b5a45;margin:0 0 18px;font-size:.92rem;text-align:center;position:relative;z-index:1;}
   .bolero-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 22px;position:relative;z-index:1;}
-  .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:rgba(122,42,55,.22);}
-  .bolero-divider span{color:var(--wine);font-size:.75rem;}
+  .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:var(--accent2,var(--wine));opacity:.3;}
+  .bolero-divider span{color:var(--accent2,var(--wine));font-size:.75rem;}
   .bolero-poem{white-space:pre-line;font-size:1.02rem;line-height:1.85;font-family:'Lora',serif;text-align:center;position:relative;z-index:1;}
-  .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--wine);position:relative;z-index:1;}
+  .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2,var(--wine));position:relative;z-index:1;}
   .bolero-edit textarea{width:100%;min-height:220px;background:var(--coffee-900);border:1px solid rgba(199,154,63,.3);color:var(--cream);padding:14px;border-radius:3px;font-family:'Lora',serif;font-size:.95rem;line-height:1.6;}
   .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px;}
   .chip-btn{padding:8px 14px;border-radius:20px;border:1px solid rgba(199,154,63,.4);background:none;color:var(--gold-light);font-size:.76rem;cursor:pointer;transition:all .2s;}
@@ -694,14 +697,41 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     };
   }
 
+  // Elige un estilo de marco decorativo según el espíritu de la letra,
+  // en vez de un solo diseño fijo para todos los boleros.
+  const MOOD_GLYPHS = {
+    romantico:  { top:'♪', mid:'❧' },
+    nostalgico: { top:'✦', mid:'❊' },
+    alegre:     { top:'♫', mid:'☀' }
+  };
+  const MOOD_KEYWORDS = {
+    nostalgico: ['recuerd','ausenc','extra','lejos','nostalg','silencio','lluvia','ayer','invierno','se fue','adiós','adios','añora','anora','vacío','vacio','vacía','vacia','soledad'],
+    alegre: ['risa','ríe','rie','alegr','fiesta','baila','sol ','luz','feliz','celebra','goza','sonrisa'],
+    romantico: ['amor','beso','corazón','corazon','querer','amar','pasión','pasion','ternura','caricia','abrazo']
+  };
+  function detectMood(text){
+    const t = text.toLowerCase();
+    const scores = { romantico:0, nostalgico:0, alegre:0 };
+    Object.keys(MOOD_KEYWORDS).forEach(mood=>{
+      MOOD_KEYWORDS[mood].forEach(w=>{ if(t.includes(w)) scores[mood]++; });
+    });
+    let best = 'romantico';
+    Object.keys(scores).forEach(mood=>{ if(scores[mood] > scores[best]) best = mood; });
+    return best;
+  }
+
   function renderDraftCard(){
     const parsed = parseBolero(boleroHistory[boleroHistory.length-1].content);
-    document.getElementById('draftCard').innerHTML =
+    const mood = detectMood(parsed.title + ' ' + parsed.body);
+    const glyphs = MOOD_GLYPHS[mood];
+    const card = document.getElementById('draftCard');
+    card.className = 'bolero-card mood-' + mood;
+    card.innerHTML =
       `<span class="bolero-corner tl"></span><span class="bolero-corner tr"></span><span class="bolero-corner bl"></span><span class="bolero-corner br"></span>` +
-      `<div class="bolero-ornament"><span>♪</span></div>` +
+      `<div class="bolero-ornament"><span>${glyphs.top}</span></div>` +
       `<h3>${escapeHtml(parsed.title)}</h3>` +
       (parsed.dedic ? `<p class="dedic">${escapeHtml(parsed.dedic)}</p>` : '') +
-      `<div class="bolero-divider"><span>❧</span></div>` +
+      `<div class="bolero-divider"><span>${glyphs.mid}</span></div>` +
       `<p class="bolero-poem">${escapeHtml(parsed.body)}</p>`;
     document.getElementById('draftEdit').value = boleroHistory[boleroHistory.length-1].content;
   }
@@ -770,20 +800,31 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     const finalText = document.getElementById('draftEdit').value;
     const parsed = parseBolero(finalText);
     const dateLabel = boleroInputs.date ? new Date(boleroInputs.date + 'T00:00:00').toLocaleDateString('es', {day:'numeric', month:'long', year:'numeric'}) : '';
-    document.getElementById('finalCard').innerHTML =
+    const mood = detectMood(parsed.title + ' ' + parsed.body);
+    const glyphs = MOOD_GLYPHS[mood];
+    const card = document.getElementById('finalCard');
+    card.className = 'bolero-card mood-' + mood;
+    card.innerHTML =
       `<span class="bolero-corner tl"></span><span class="bolero-corner tr"></span><span class="bolero-corner bl"></span><span class="bolero-corner br"></span>` +
-      `<div class="bolero-ornament"><span>♪</span></div>` +
+      `<div class="bolero-ornament"><span>${glyphs.top}</span></div>` +
       `<h3>${escapeHtml(parsed.title)}</h3>` +
       (parsed.dedic ? `<p class="dedic">${escapeHtml(parsed.dedic)}</p>` : '') +
-      `<div class="bolero-divider"><span>❧</span></div>` +
+      `<div class="bolero-divider"><span>${glyphs.mid}</span></div>` +
       `<p class="bolero-poem">${escapeHtml(parsed.body)}</p>` +
       `<p class="bolero-sig">— Café de Don Ernesto${dateLabel ? ' · ' + dateLabel : ''}</p>`;
-    window._finalBoleroHtml = document.getElementById('finalCard').innerHTML;
+    window._finalBoleroHtml = card.innerHTML;
     window._finalBoleroTitle = parsed.title;
+    window._finalBoleroMood = mood;
     setStep(3);
   }
 
+  const MOOD_COLORS = {
+    romantico:  { accent:'#c79a3f', accent2:'#7a2a37' },
+    nostalgico: { accent:'#8fa3c7', accent2:'#3a4a63' },
+    alegre:     { accent:'#e0923c', accent2:'#a94f1c' }
+  };
   function downloadBolero(){
+    const c = MOOD_COLORS[window._finalBoleroMood] || MOOD_COLORS.romantico;
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${escapeHtml(window._finalBoleroTitle||'Mi Bolero Escrito')}</title>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;900&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
@@ -791,20 +832,20 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
       .card{position:relative;overflow:hidden;max-width:520px;background:#ece0c2;color:#20130b;border-radius:6px;padding:48px 42px 42px;box-shadow:0 24px 60px rgba(0,0,0,.4);border:1px solid rgba(122,42,55,.22);}
       .card::after{content:"";position:absolute;right:-16px;bottom:-16px;width:150px;height:150px;background:url('https://cafededonernesto-bnu.pages.dev/hero-don-ernesto.png') center/cover no-repeat;opacity:.07;border-radius:50%;filter:grayscale(1);pointer-events:none;}
       .bolero-corner{position:absolute;width:24px;height:24px;pointer-events:none;}
-      .bolero-corner.tl{top:12px;left:12px;border-top:2px solid #c79a3f;border-left:2px solid #c79a3f;}
-      .bolero-corner.tr{top:12px;right:12px;border-top:2px solid #c79a3f;border-right:2px solid #c79a3f;}
-      .bolero-corner.bl{bottom:12px;left:12px;border-bottom:2px solid #c79a3f;border-left:2px solid #c79a3f;}
-      .bolero-corner.br{bottom:12px;right:12px;border-bottom:2px solid #c79a3f;border-right:2px solid #c79a3f;}
+      .bolero-corner.tl{top:12px;left:12px;border-top:2px solid ${c.accent};border-left:2px solid ${c.accent};}
+      .bolero-corner.tr{top:12px;right:12px;border-top:2px solid ${c.accent};border-right:2px solid ${c.accent};}
+      .bolero-corner.bl{bottom:12px;left:12px;border-bottom:2px solid ${c.accent};border-left:2px solid ${c.accent};}
+      .bolero-corner.br{bottom:12px;right:12px;border-bottom:2px solid ${c.accent};border-right:2px solid ${c.accent};}
       .bolero-ornament{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;position:relative;z-index:1;}
-      .bolero-ornament::before,.bolero-ornament::after{content:"";flex:1;height:1px;max-width:64px;background:linear-gradient(90deg,transparent,#c79a3f,transparent);}
-      .bolero-ornament span{color:#c79a3f;font-size:.85rem;}
-      h3{font-family:'Fraunces',Georgia,serif;color:#7a2a37;margin:0 0 6px;font-size:1.5rem;text-align:center;position:relative;z-index:1;}
+      .bolero-ornament::before,.bolero-ornament::after{content:"";flex:1;height:1px;max-width:64px;background:linear-gradient(90deg,transparent,${c.accent},transparent);}
+      .bolero-ornament span{color:${c.accent};font-size:.85rem;}
+      h3{font-family:'Fraunces',Georgia,serif;color:${c.accent2};margin:0 0 6px;font-size:1.5rem;text-align:center;position:relative;z-index:1;}
       .dedic{font-style:italic;color:#6b5a45;margin:0 0 18px;text-align:center;position:relative;z-index:1;}
       .bolero-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 22px;position:relative;z-index:1;}
-      .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:rgba(122,42,55,.22);}
-      .bolero-divider span{color:#7a2a37;font-size:.75rem;}
+      .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:${c.accent2};opacity:.3;}
+      .bolero-divider span{color:${c.accent2};font-size:.75rem;}
       .bolero-poem{white-space:pre-line;line-height:1.85;font-size:1.05rem;text-align:center;position:relative;z-index:1;}
-      .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:#7a2a37;position:relative;z-index:1;}
+      .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:${c.accent2};position:relative;z-index:1;}
     </style></head><body><div class="card">${window._finalBoleroHtml}</div></body></html>`;
     const blob = new Blob([html], {type:'text/html'});
     const a = document.createElement('a');
