@@ -190,7 +190,8 @@
   .bolero-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 22px;position:relative;z-index:1;}
   .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:var(--accent2,var(--wine));opacity:.3;}
   .bolero-divider span{color:var(--accent2,var(--wine));font-size:.75rem;}
-  .bolero-poem{white-space:pre-line;font-size:1.02rem;line-height:1.85;font-family:'Lora',serif;text-align:center;position:relative;z-index:1;}
+  .bolero-stanza{white-space:pre-line;font-size:1.02rem;line-height:1.85;font-family:'Lora',serif;text-align:center;position:relative;z-index:1;margin:0;}
+  .bolero-note{text-align:center;color:var(--accent,var(--gold));opacity:.55;font-size:.85rem;margin:14px 0;position:relative;z-index:1;}
   .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2,var(--wine));position:relative;z-index:1;}
   .bolero-edit textarea{width:100%;min-height:220px;background:var(--coffee-900);border:1px solid rgba(199,154,63,.3);color:var(--cream);padding:14px;border-radius:3px;font-family:'Lora',serif;font-size:.95rem;line-height:1.6;}
   .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px;}
@@ -724,6 +725,16 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     return best;
   }
 
+  // Divide el poema en estrofas y pone una notita musical decorativa
+  // entre cada una (no es notación real — es un adorno visual).
+  function renderPoemHtml(body, glyphs){
+    const stanzas = body.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+    return stanzas.map((s,i)=>{
+      const note = i>0 ? `<div class="bolero-note">${glyphs.top}</div>` : '';
+      return note + `<p class="bolero-stanza">${escapeHtml(s)}</p>`;
+    }).join('');
+  }
+
   function renderDraftCard(){
     const parsed = parseBolero(boleroHistory[boleroHistory.length-1].content);
     const mood = detectMood(parsed.title + ' ' + parsed.body);
@@ -736,7 +747,7 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
       `<h3>${escapeHtml(parsed.title)}</h3>` +
       (parsed.dedic ? `<p class="dedic">${escapeHtml(parsed.dedic)}</p>` : '') +
       `<div class="bolero-divider"><span>${glyphs.mid}</span></div>` +
-      `<p class="bolero-poem">${escapeHtml(parsed.body)}</p>`;
+      renderPoemHtml(parsed.body, glyphs);
     document.getElementById('draftEdit').value = boleroHistory[boleroHistory.length-1].content;
   }
 
@@ -814,7 +825,7 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
       `<h3>${escapeHtml(parsed.title)}</h3>` +
       (parsed.dedic ? `<p class="dedic">${escapeHtml(parsed.dedic)}</p>` : '') +
       `<div class="bolero-divider"><span>${glyphs.mid}</span></div>` +
-      `<p class="bolero-poem">${escapeHtml(parsed.body)}</p>` +
+      renderPoemHtml(parsed.body, glyphs) +
       `<p class="bolero-sig">— Café de Don Ernesto${dateLabel ? ' · ' + dateLabel : ''}</p>`;
     window._finalBoleroHtml = card.innerHTML;
     window._finalBoleroTitle = parsed.title;
@@ -881,7 +892,8 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
       .bolero-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 22px;position:relative;z-index:1;}
       .bolero-divider::before,.bolero-divider::after{content:"";flex:1;height:1px;background:${c.accent2};opacity:.3;}
       .bolero-divider span{color:${c.accent2};font-size:.75rem;}
-      .bolero-poem{white-space:pre-line;line-height:1.85;font-size:1.05rem;text-align:center;position:relative;z-index:1;}
+      .bolero-stanza{white-space:pre-line;line-height:1.85;font-size:1.05rem;text-align:center;position:relative;z-index:1;margin:0;}
+      .bolero-note{text-align:center;color:${c.accent};opacity:.55;font-size:.85rem;margin:14px 0;position:relative;z-index:1;}
       .bolero-sig{margin-top:26px;text-align:center;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:${c.accent2};position:relative;z-index:1;}
     </style></head><body><div class="card">${window._finalBoleroHtml}</div></body></html>`;
     const blob = new Blob([html], {type:'text/html'});
