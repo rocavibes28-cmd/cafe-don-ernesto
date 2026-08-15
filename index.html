@@ -708,8 +708,15 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     const res = await fetch(url);
     if(!res.ok) throw new Error('yt-fetch-failed');
     const data = await res.json();
+    const vistos = new Set();
     return (data.items || [])
       .filter(it => it.snippet && it.snippet.resourceId && it.snippet.resourceId.videoId)
+      .filter(it => {
+        const id = it.snippet.resourceId.videoId;
+        if(vistos.has(id)) return false; // evita videos repetidos en la lista
+        vistos.add(id);
+        return true;
+      })
       .map(it => ({
         titulo: it.snippet.title,
         videoId: it.snippet.resourceId.videoId,
