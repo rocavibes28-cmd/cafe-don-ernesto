@@ -253,6 +253,19 @@
   .reveal.in{opacity:1;transform:translateY(0);}
   .track-body audio{width:100%;margin-top:10px;height:34px;}
   .track-empty{color:rgba(242,228,198,.6);font-style:italic;text-align:center;padding:20px;grid-column:1/-1;}
+  .artist-block{margin-bottom:44px;}
+  .artist-block h3{color:var(--gold-light);font-family:'Fraunces',serif;font-size:1.3rem;margin:0 0 6px;}
+  .album-block{margin-bottom:26px;}
+  .album-block h4{color:rgba(242,228,198,.6);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 14px;}
+  .song-search{background:rgba(199,154,63,.06);border:1px solid rgba(199,154,63,.25);border-radius:8px;padding:26px 24px;margin-bottom:36px;}
+  .song-search label{display:block;color:var(--gold-light);font-size:.9rem;margin-bottom:10px;}
+  .song-search-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .song-search-row input{flex:1;min-width:220px;background:var(--coffee-900);border:1px solid rgba(199,154,63,.3);color:var(--paper);padding:11px 14px;border-radius:4px;font-family:inherit;font-size:.95rem;}
+  .search-result{margin-top:18px;background:var(--coffee-800);border:1px solid rgba(199,154,63,.3);border-radius:6px;padding:18px 20px;}
+  .search-result-label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:0 0 6px;}
+  .search-result h4{margin:0 0 2px;color:var(--paper);}
+  .yt-embed{position:relative;width:100%;padding-top:56.25%;border-radius:6px;overflow:hidden;border:1px solid rgba(199,154,63,.22);background:var(--coffee-900);}
+  .yt-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -350,6 +363,14 @@
       <div class="section-head reveal">
         <h2>Sonando en el Café</h2>
         <p>Boleros que tocan el alma — nuevos y clásicos, de nuestros artistas.</p>
+      </div>
+      <div class="song-search reveal">
+        <label for="cancionSearchInput">¿Buscas una canción para un momento en especial? Cuéntale a Don Ernesto qué sientes o qué ocasión es.</label>
+        <div class="song-search-row">
+          <input type="text" id="cancionSearchInput" placeholder="Ej: algo para una despedida, un amor de toda la vida, una tarde de lluvia..." onkeydown="if(event.key==='Enter') buscarCancion();">
+          <button class="btn btn-outline" type="button" onclick="buscarCancion()">Pedirle a Don Ernesto</button>
+        </div>
+        <div id="cancionSearchResult"></div>
       </div>
       <div class="track-grid reveal" id="trackGrid"></div>
       <p class="track-note reveal" id="trackNote"></p>
@@ -652,41 +673,88 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
   document.addEventListener('DOMContentLoaded', updateLimitNote);
 
   // ============================================================
-  // CATÁLOGO DE CANCIONES — edita esta lista para añadir música
+  // CATÁLOGO DE ÁLBUMES — edita esta lista para añadir música
   // ============================================================
-  // Cómo agregar una canción nueva:
-  //   1) Sube el archivo mp3 a la carpeta "musica/" en GitHub
-  //      (en "Add file → Upload files", escribe musica/ delante
-  //      del nombre si la carpeta todavía no existe).
-  //   2) Copia una línea de aquí abajo y cambia los datos:
-  //      - titulo:  el nombre de la canción
-  //      - artista: Valery Luna / Trío Nostalgia / etc.
-  //      - archivo: "musica/nombre-exacto-del-archivo.mp3"
-  //      - tag:     una etiqueta corta (opcional), ej. "Nuevo"
-  //   3) Guarda (Commit changes) — no hace falta tocar nada más.
-  // Deja el arreglo vacío ([]) si todavía no hay canciones.
-  const CANCIONES = [
-    // { titulo:'Nombre de la canción', artista:'Valery Luna', archivo:'musica/nombre.mp3', tag:'Nuevo' },
+  // Cómo agregar un álbum nuevo (nada de archivos, solo esto):
+  //   1) En YouTube, organiza las canciones de ese álbum en una
+  //      playlist (una playlist = un álbum).
+  //   2) Copia el enlace de esa playlist y saca el código que va
+  //      después de "list=" en la URL — eso es el playlist ID.
+  //   3) Copia una línea de aquí abajo y cambia los datos:
+  //      - artista:  Valery Luna / Trío Nostalgia / etc.
+  //      - album:    el nombre del álbum
+  //      - playlist: el playlist ID (lo que va después de list=)
+  //      - tema:     palabras sueltas sobre el ánimo del álbum
+  //                  (para que el buscador de arriba lo encuentre),
+  //                  ej: 'amor, despedida, lluvia, extrañar'
+  //   4) Guarda (Commit changes) — no hace falta tocar nada más.
+  //      Cualquier canción que agregues a esa playlist en YouTube
+  //      aparece sola en el sitio, sin volver a tocar el código.
+  const ALBUMES = [
+    { artista:'Valery Luna', album:'Café Nostalgia', playlist:'PLKP-n_WdLlpY', tema:'amor, experiencias amorosas, café' },
   ];
 
   function renderTrackGrid(){
     const grid = document.getElementById('trackGrid');
     const note = document.getElementById('trackNote');
     if(!grid) return;
-    if(!CANCIONES.length){
-      grid.innerHTML = '<p class="track-empty">Muy pronto aquí sonarán las primeras canciones reales del Café.</p>';
-      if(note) note.textContent = 'Espacio listo para tu música — se va llenando a medida que subimos canciones.';
+    if(!ALBUMES.length){
+      grid.innerHTML = '<p class="track-empty">Muy pronto aquí sonará la primera música real del Café.</p>';
+      if(note) note.textContent = 'Espacio listo para tu música — se va llenando a medida que agregamos álbumes.';
       return;
     }
-    grid.innerHTML = CANCIONES.map(c => `
-      <div class="track-card">
-        <div class="track-thumb"><span class="tag">${escapeHtml(c.tag || c.artista)}</span></div>
-        <div class="track-body">
-          <h4>${escapeHtml(c.titulo)}</h4><span>${escapeHtml(c.artista)}</span>
-          <audio controls preload="none" src="${escapeHtml(c.archivo)}"></audio>
-        </div>
-      </div>`).join('');
-    if(note) note.textContent = 'Escucha directo aquí — el catálogo crece con cada canción nueva del Café.';
+    const porArtista = {};
+    ALBUMES.forEach(a=>{
+      const artista = a.artista || 'Café de Don Ernesto';
+      porArtista[artista] = porArtista[artista] || [];
+      porArtista[artista].push(a);
+    });
+    let html = '';
+    Object.keys(porArtista).forEach(artista=>{
+      html += `<div class="artist-block"><h3>${escapeHtml(artista)}</h3>`;
+      porArtista[artista].forEach(a=>{
+        html += `<div class="album-block"><h4>${escapeHtml(a.album)}</h4>${albumEmbedHtml(a)}</div>`;
+      });
+      html += `</div>`;
+    });
+    grid.innerHTML = html;
+    if(note) note.textContent = 'Escucha directo aquí — el catálogo crece con cada canción que agregues a tus playlists.';
+  }
+
+  function albumEmbedHtml(a){
+    return `<div class="yt-embed"><iframe src="https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(a.playlist)}" title="${escapeHtml(a.album)} — ${escapeHtml(a.artista)}" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  }
+
+  // Buscador simple por palabras clave (sin IA, sin costo):
+  // compara lo que la persona escribe contra el campo "tema" de
+  // cada álbum, y muestra el que más coincida.
+  function buscarCancion(){
+    const input = document.getElementById('cancionSearchInput');
+    const resultEl = document.getElementById('cancionSearchResult');
+    const q = (input.value || '').trim().toLowerCase();
+    if(!q){ resultEl.innerHTML = ''; return; }
+    if(!ALBUMES.length){
+      resultEl.innerHTML = '<div class="search-result"><p>Todavía no hay música cargada en el Café — vuelve pronto.</p></div>';
+      return;
+    }
+    const palabras = q.split(/\s+/).filter(w => w.length > 2);
+    let mejor = null, mejorPuntaje = 0;
+    ALBUMES.forEach(a=>{
+      const pajar = ((a.tema || '') + ' ' + a.album).toLowerCase();
+      let puntaje = 0;
+      palabras.forEach(w => { if(pajar.includes(w)) puntaje++; });
+      if(puntaje > mejorPuntaje){ mejorPuntaje = puntaje; mejor = a; }
+    });
+    if(!mejor){
+      resultEl.innerHTML = '<div class="search-result"><p>Don Ernesto todavía no encuentra algo exacto para eso — prueba con otras palabras, o escucha el repertorio completo aquí abajo.</p></div>';
+      return;
+    }
+    resultEl.innerHTML = `<div class="search-result">
+        <p class="search-result-label">Don Ernesto te recomienda</p>
+        <h4>${escapeHtml(mejor.album)}</h4>
+        <span style="color:rgba(242,228,198,.65);">${escapeHtml(mejor.artista)}</span>
+        <div style="margin-top:12px;">${albumEmbedHtml(mejor)}</div>
+      </div>`;
   }
   document.addEventListener('DOMContentLoaded', renderTrackGrid);
 
