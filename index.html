@@ -251,6 +251,8 @@
 
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;}
   .reveal.in{opacity:1;transform:translateY(0);}
+  .track-body audio{width:100%;margin-top:10px;height:34px;}
+  .track-empty{color:rgba(242,228,198,.6);font-style:italic;text-align:center;padding:20px;grid-column:1/-1;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -349,21 +351,8 @@
         <h2>Sonando en el Café</h2>
         <p>Boleros que tocan el alma — nuevos y clásicos, de nuestros artistas.</p>
       </div>
-      <div class="track-grid reveal">
-        <div class="track-card">
-          <div class="track-thumb"><span class="tag">Video</span><div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="track-body"><h4>Último lanzamiento</h4><span>Valery Luna</span></div>
-        </div>
-        <div class="track-card">
-          <div class="track-thumb"><span class="tag">Video</span><div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="track-body"><h4>Clásico del Café</h4><span>Trío Nostalgia</span></div>
-        </div>
-        <div class="track-card">
-          <div class="track-thumb"><span class="tag">Short</span><div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="track-body"><h4>Un momento del Café</h4><span>Boleros en la Sangre</span></div>
-        </div>
-      </div>
-      <p class="track-note reveal">Espacios listos para tus videos reales de YouTube — hoy son marcadores de posición.</p>
+      <div class="track-grid reveal" id="trackGrid"></div>
+      <p class="track-note reveal" id="trackNote"></p>
       <div class="video-row reveal">
         <a class="video-chip" href="https://www.youtube.com/@BolerosenlaSangre" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M10 9.5 15 12l-5 2.5Z" fill="currentColor" stroke="none"/></svg>Canal de YouTube</a>
         <a class="video-chip" href="https://www.youtube.com/@BolerosenlaSangre" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="3"/><circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/></svg>Shorts</a>
@@ -661,6 +650,45 @@ No reproduzcas letras de canciones existentes. No inventes datos personales que 
     if(startBtn){ startBtn.disabled = left <= 0; }
   }
   document.addEventListener('DOMContentLoaded', updateLimitNote);
+
+  // ============================================================
+  // CATÁLOGO DE CANCIONES — edita esta lista para añadir música
+  // ============================================================
+  // Cómo agregar una canción nueva:
+  //   1) Sube el archivo mp3 a la carpeta "musica/" en GitHub
+  //      (en "Add file → Upload files", escribe musica/ delante
+  //      del nombre si la carpeta todavía no existe).
+  //   2) Copia una línea de aquí abajo y cambia los datos:
+  //      - titulo:  el nombre de la canción
+  //      - artista: Valery Luna / Trío Nostalgia / etc.
+  //      - archivo: "musica/nombre-exacto-del-archivo.mp3"
+  //      - tag:     una etiqueta corta (opcional), ej. "Nuevo"
+  //   3) Guarda (Commit changes) — no hace falta tocar nada más.
+  // Deja el arreglo vacío ([]) si todavía no hay canciones.
+  const CANCIONES = [
+    // { titulo:'Nombre de la canción', artista:'Valery Luna', archivo:'musica/nombre.mp3', tag:'Nuevo' },
+  ];
+
+  function renderTrackGrid(){
+    const grid = document.getElementById('trackGrid');
+    const note = document.getElementById('trackNote');
+    if(!grid) return;
+    if(!CANCIONES.length){
+      grid.innerHTML = '<p class="track-empty">Muy pronto aquí sonarán las primeras canciones reales del Café.</p>';
+      if(note) note.textContent = 'Espacio listo para tu música — se va llenando a medida que subimos canciones.';
+      return;
+    }
+    grid.innerHTML = CANCIONES.map(c => `
+      <div class="track-card">
+        <div class="track-thumb"><span class="tag">${escapeHtml(c.tag || c.artista)}</span></div>
+        <div class="track-body">
+          <h4>${escapeHtml(c.titulo)}</h4><span>${escapeHtml(c.artista)}</span>
+          <audio controls preload="none" src="${escapeHtml(c.archivo)}"></audio>
+        </div>
+      </div>`).join('');
+    if(note) note.textContent = 'Escucha directo aquí — el catálogo crece con cada canción nueva del Café.';
+  }
+  document.addEventListener('DOMContentLoaded', renderTrackGrid);
 
   // Backend real todavía no conectado en esta versión de producción.
   // Cuando el endpoint /api/bolero esté desplegado y probado, esta función
